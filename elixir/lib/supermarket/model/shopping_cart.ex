@@ -50,6 +50,20 @@ defmodule Supermarket.Model.ShoppingCart do
     quantity_as_int = trunc(quantity)
 
     case offer.offer_type do
+      :three_for_two ->
+        {discount, qualifying_quantity} = {nil, 3}
+        discount_count = div(quantity_as_int, qualifying_quantity)
+
+        if quantity_as_int > 2 do
+          discount_amount =
+            quantity * unit_price -
+              (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
+
+          Discount.new(product, "3 for 2", -discount_amount)
+        else
+          discount
+        end
+
       _ ->
         qualifying_quantity = 1
 
