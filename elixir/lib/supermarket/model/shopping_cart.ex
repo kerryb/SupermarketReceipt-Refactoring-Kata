@@ -39,6 +39,11 @@ defmodule Supermarket.Model.ShoppingCart do
   end
 
   defp apply_offer(receipt, catalog, offer, product, quantity) do
+    discount = calculate_discount(catalog, offer, product, quantity)
+    if !is_nil(discount), do: Receipt.add_discount(receipt, discount), else: receipt
+  end
+
+  defp calculate_discount(catalog, offer, product, quantity) do
     unit_price = SupermarketCatalog.get_unit_price(catalog, product)
     quantity_as_int = trunc(quantity)
     discount = nil
@@ -71,33 +76,30 @@ defmodule Supermarket.Model.ShoppingCart do
 
     discount_count = div(quantity_as_int, qualifying_quantity)
 
-    discount =
-      cond do
-        offer.offer_type == :three_for_two and quantity_as_int > 2 ->
-          discount_amount =
-            quantity * unit_price -
-              (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
+    cond do
+      offer.offer_type == :three_for_two and quantity_as_int > 2 ->
+        discount_amount =
+          quantity * unit_price -
+            (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
 
-          Discount.new(product, "3 for 2", -discount_amount)
+        Discount.new(product, "3 for 2", -discount_amount)
 
-        offer.offer_type == :ten_percent_discount ->
-          Discount.new(
-            product,
-            "#{offer.argument}% off",
-            -quantity * unit_price * offer.argument / 100.0
-          )
+      offer.offer_type == :ten_percent_discount ->
+        Discount.new(
+          product,
+          "#{offer.argument}% off",
+          -quantity * unit_price * offer.argument / 100.0
+        )
 
-        offer.offer_type == :five_for_amount and quantity_as_int >= 5 ->
-          discount_total =
-            unit_price * quantity -
-              (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
+      offer.offer_type == :five_for_amount and quantity_as_int >= 5 ->
+        discount_total =
+          unit_price * quantity -
+            (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
 
-          Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
+        Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
 
-        true ->
-          discount
-      end
-
-    if !is_nil(discount), do: Receipt.add_discount(receipt, discount), else: receipt
+      true ->
+        discount
+    end
   end
 end
