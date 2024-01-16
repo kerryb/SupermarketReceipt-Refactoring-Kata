@@ -28,18 +28,18 @@ defmodule Supermarket.Model.ShoppingCart do
   def handle_offers(cart, receipt, offers, catalog) do
     cart.product_quantities
     |> Map.keys()
-    |> Enum.reduce(receipt, fn p, receipt ->
-      quantity = cart.product_quantities[p]
+    |> Enum.reduce(receipt, fn product, receipt ->
+      quantity = cart.product_quantities[product]
 
-      case offers[p] do
+      case offers[product] do
         nil -> receipt
-        offer -> apply_offer(receipt, catalog, offer, p, quantity)
+        offer -> apply_offer(receipt, catalog, offer, product, quantity)
       end
     end)
   end
 
-  defp apply_offer(receipt, catalog, offer, p, quantity) do
-    unit_price = SupermarketCatalog.get_unit_price(catalog, p)
+  defp apply_offer(receipt, catalog, offer, product, quantity) do
+    unit_price = SupermarketCatalog.get_unit_price(catalog, product)
     quantity_as_int = trunc(quantity)
     discount = nil
     x = 1
@@ -57,7 +57,7 @@ defmodule Supermarket.Model.ShoppingCart do
             the_total = Integer.mod(quantity_as_int, 2) * unit_price
             total = price_per_unit + the_total
             discount_n = unit_price * quantity - total
-            {Discount.new(p, "2 for #{offer.argument}", -discount_n), 2}
+            {Discount.new(product, "2 for #{offer.argument}", -discount_n), 2}
           else
             {discount, x}
           end
@@ -76,11 +76,11 @@ defmodule Supermarket.Model.ShoppingCart do
             quantity * unit_price -
               (number_of_xs * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
 
-          Discount.new(p, "3 for 2", -discount_amount)
+          Discount.new(product, "3 for 2", -discount_amount)
 
         offer.offer_type == :ten_percent_discount ->
           Discount.new(
-            p,
+            product,
             "#{offer.argument}% off",
             -quantity * unit_price * offer.argument / 100.0
           )
@@ -90,7 +90,7 @@ defmodule Supermarket.Model.ShoppingCart do
             unit_price * quantity -
               (offer.argument * number_of_xs + Integer.mod(quantity_as_int, 5) * unit_price)
 
-          Discount.new(p, "#{x} for #{offer.argument}", -discount_total)
+          Discount.new(product, "#{x} for #{offer.argument}", -discount_total)
 
         true ->
           discount
