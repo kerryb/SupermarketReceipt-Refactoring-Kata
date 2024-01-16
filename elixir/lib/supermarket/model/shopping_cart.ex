@@ -69,14 +69,14 @@ defmodule Supermarket.Model.ShoppingCart do
     qualifying_quantity =
       if offer.offer_type == :five_for_amount, do: 5, else: qualifying_quantity
 
-    number_of_xs = div(quantity_as_int, qualifying_quantity)
+    discount_count = div(quantity_as_int, qualifying_quantity)
 
     discount =
       cond do
         offer.offer_type == :three_for_two and quantity_as_int > 2 ->
           discount_amount =
             quantity * unit_price -
-              (number_of_xs * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
+              (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
 
           Discount.new(product, "3 for 2", -discount_amount)
 
@@ -90,7 +90,7 @@ defmodule Supermarket.Model.ShoppingCart do
         offer.offer_type == :five_for_amount and quantity_as_int >= 5 ->
           discount_total =
             unit_price * quantity -
-              (offer.argument * number_of_xs + Integer.mod(quantity_as_int, 5) * unit_price)
+              (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
 
           Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
 
