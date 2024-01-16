@@ -32,16 +32,18 @@ defmodule Supermarket.Model.ShoppingCart do
       quantity = cart.product_quantities[product]
 
       case offers[product] do
-        nil -> receipt
-        offer -> apply_offer(receipt, catalog, offer, product, quantity)
+        nil ->
+          receipt
+
+        offer ->
+          discount = calculate_discount(catalog, offer, product, quantity)
+          apply_offer(receipt, discount)
       end
     end)
   end
 
-  defp apply_offer(receipt, catalog, offer, product, quantity) do
-    discount = calculate_discount(catalog, offer, product, quantity)
-    if !is_nil(discount), do: Receipt.add_discount(receipt, discount), else: receipt
-  end
+  defp apply_offer(receipt, nil), do: receipt
+  defp apply_offer(receipt, discount), do: Receipt.add_discount(receipt, discount)
 
   defp calculate_discount(catalog, offer, product, quantity) do
     unit_price = SupermarketCatalog.get_unit_price(catalog, product)
