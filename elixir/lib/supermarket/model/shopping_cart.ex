@@ -51,13 +51,12 @@ defmodule Supermarket.Model.ShoppingCart do
 
     case offer.offer_type do
       _ ->
-        discount = nil
         qualifying_quantity = 1
 
         {discount, qualifying_quantity} =
           cond do
             offer.offer_type == :three_for_two ->
-              {discount, 3}
+              {nil, 3}
 
             offer.offer_type == :two_for_amount ->
               if quantity_as_int >= 2 do
@@ -69,11 +68,11 @@ defmodule Supermarket.Model.ShoppingCart do
                 discount_n = unit_price * quantity - total
                 {Discount.new(product, "2 for #{offer.argument}", -discount_n), 2}
               else
-                {discount, qualifying_quantity}
+                {nil, qualifying_quantity}
               end
 
             true ->
-              {discount, 2}
+              {nil, 2}
           end
 
         qualifying_quantity =
