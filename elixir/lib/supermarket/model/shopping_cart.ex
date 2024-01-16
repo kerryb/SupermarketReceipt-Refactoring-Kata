@@ -31,12 +31,9 @@ defmodule Supermarket.Model.ShoppingCart do
     |> Enum.reduce(receipt, fn p, receipt ->
       quantity = cart.product_quantities[p]
 
-      offer = offers[p]
-
-      if offers[p] do
-        apply_offer(receipt, catalog, offer, p, quantity)
-      else
-        receipt
+      case offers[p] do
+        nil -> receipt
+        offer -> apply_offer(receipt, catalog, offer, p, quantity)
       end
     end)
   end
