@@ -42,32 +42,34 @@ defmodule Supermarket.Model.ShoppingCart do
     unit_price = SupermarketCatalog.get_unit_price(catalog, product)
     quantity_as_int = trunc(quantity)
     discount = nil
-    x = 1
+    qualifying_quantity = 1
 
-    {discount, x} =
+    {discount, qualifying_quantity} =
       cond do
         offer.offer_type == :three_for_two ->
           {discount, 3}
 
         offer.offer_type == :two_for_amount ->
           if quantity_as_int >= 2 do
-            x = 2
-            int_division = div(quantity_as_int, x)
+            qualifying_quantity = 2
+            int_division = div(quantity_as_int, qualifying_quantity)
             price_per_unit = offer.argument * int_division
             the_total = Integer.mod(quantity_as_int, 2) * unit_price
             total = price_per_unit + the_total
             discount_n = unit_price * quantity - total
             {Discount.new(product, "2 for #{offer.argument}", -discount_n), 2}
           else
-            {discount, x}
+            {discount, qualifying_quantity}
           end
 
         true ->
           {discount, 2}
       end
 
-    x = if offer.offer_type == :five_for_amount, do: 5, else: x
-    number_of_xs = div(quantity_as_int, x)
+    qualifying_quantity =
+      if offer.offer_type == :five_for_amount, do: 5, else: qualifying_quantity
+
+    number_of_xs = div(quantity_as_int, qualifying_quantity)
 
     discount =
       cond do
@@ -90,7 +92,7 @@ defmodule Supermarket.Model.ShoppingCart do
             unit_price * quantity -
               (offer.argument * number_of_xs + Integer.mod(quantity_as_int, 5) * unit_price)
 
-          Discount.new(product, "#{x} for #{offer.argument}", -discount_total)
+          Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
 
         true ->
           discount
