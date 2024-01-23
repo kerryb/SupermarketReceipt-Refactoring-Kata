@@ -78,26 +78,7 @@ defmodule Supermarket.Model.ShoppingCart do
         end
 
       _ ->
-        qualifying_quantity = 1
-
-        {discount, qualifying_quantity} =
-          cond do
-            offer.offer_type == :two_for_amount ->
-              if quantity_as_int >= 2 do
-                qualifying_quantity = 2
-                int_division = div(quantity_as_int, qualifying_quantity)
-                price_per_unit = offer.argument * int_division
-                the_total = Integer.mod(quantity_as_int, 2) * unit_price
-                total = price_per_unit + the_total
-                discount_n = unit_price * quantity - total
-                {Discount.new(product, "2 for #{offer.argument}", -discount_n), 2}
-              else
-                {nil, qualifying_quantity}
-              end
-
-            true ->
-              {nil, 2}
-          end
+        {discount, qualifying_quantity} = {nil, 2}
 
         qualifying_quantity =
           if offer.offer_type == :five_for_amount, do: 5, else: qualifying_quantity
