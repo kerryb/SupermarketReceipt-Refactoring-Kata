@@ -51,56 +51,72 @@ defmodule Supermarket.Model.ShoppingCart do
 
     case offer.offer_type do
       :three_for_two ->
-        {discount, qualifying_quantity} = {nil, 3}
-        discount_count = div(quantity_as_int, qualifying_quantity)
-
-        if quantity_as_int > 2 do
-          discount_amount =
-            quantity * unit_price -
-              (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
-
-          Discount.new(product, "3 for 2", -discount_amount)
-        else
-          discount
-        end
+        three_for_two_discount(unit_price, offer, product, quantity, quantity_as_int)
 
       :two_for_amount ->
-        if quantity_as_int >= 2 do
-          qualifying_quantity = 2
-          int_division = div(quantity_as_int, qualifying_quantity)
-          price_per_unit = offer.argument * int_division
-          the_total = Integer.mod(quantity_as_int, 2) * unit_price
-          total = price_per_unit + the_total
-          discount_n = unit_price * quantity - total
-          Discount.new(product, "2 for #{offer.argument}", -discount_n)
-        else
-          nil
-        end
+        two_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int)
 
       :five_for_amount ->
-        discount = nil
-        qualifying_quantity = 5
-        discount_count = div(quantity_as_int, qualifying_quantity)
-
-        if quantity_as_int >= 5 do
-          discount_total =
-            unit_price * quantity -
-              (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
-
-          Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
-        else
-          discount
-        end
+        five_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int)
 
       :ten_percent_discount ->
-        Discount.new(
-          product,
-          "#{offer.argument}% off",
-          -quantity * unit_price * offer.argument / 100.0
-        )
+        ten_percent_discount(unit_price, offer, product, quantity, quantity_as_int)
 
       _ ->
         nil
     end
+  end
+
+  defp three_for_two_discount(unit_price, _offer, product, quantity, quantity_as_int) do
+    {discount, qualifying_quantity} = {nil, 3}
+    discount_count = div(quantity_as_int, qualifying_quantity)
+
+    if quantity_as_int > 2 do
+      discount_amount =
+        quantity * unit_price -
+          (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
+
+      Discount.new(product, "3 for 2", -discount_amount)
+    else
+      discount
+    end
+  end
+
+  defp two_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int) do
+    if quantity_as_int >= 2 do
+      qualifying_quantity = 2
+      int_division = div(quantity_as_int, qualifying_quantity)
+      price_per_unit = offer.argument * int_division
+      the_total = Integer.mod(quantity_as_int, 2) * unit_price
+      total = price_per_unit + the_total
+      discount_n = unit_price * quantity - total
+      Discount.new(product, "2 for #{offer.argument}", -discount_n)
+    else
+      nil
+    end
+  end
+
+  defp five_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int) do
+    discount = nil
+    qualifying_quantity = 5
+    discount_count = div(quantity_as_int, qualifying_quantity)
+
+    if quantity_as_int >= 5 do
+      discount_total =
+        unit_price * quantity -
+          (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
+
+      Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
+    else
+      discount
+    end
+  end
+
+  defp ten_percent_discount(unit_price, offer, product, quantity, _quantity_as_int) do
+    Discount.new(
+      product,
+      "#{offer.argument}% off",
+      -quantity * unit_price * offer.argument / 100.0
+    )
   end
 end
