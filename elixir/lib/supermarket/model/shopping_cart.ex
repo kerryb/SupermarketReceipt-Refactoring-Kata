@@ -46,28 +46,8 @@ defmodule Supermarket.Model.ShoppingCart do
   defp apply_offer(receipt, nil), do: receipt
   defp apply_offer(receipt, discount), do: Receipt.add_discount(receipt, discount)
 
-  defp calculate_discount(unit_price, offer, product, quantity) do
+  defp calculate_discount(unit_price, %{offer_type: :three_for_two}, product, quantity) do
     quantity_as_int = trunc(quantity)
-
-    case offer.offer_type do
-      :three_for_two ->
-        three_for_two_discount(unit_price, offer, product, quantity, quantity_as_int)
-
-      :two_for_amount ->
-        two_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int)
-
-      :five_for_amount ->
-        five_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int)
-
-      :ten_percent_discount ->
-        ten_percent_discount(unit_price, offer, product, quantity, quantity_as_int)
-
-      _ ->
-        nil
-    end
-  end
-
-  defp three_for_two_discount(unit_price, _offer, product, quantity, quantity_as_int) do
     {discount, qualifying_quantity} = {nil, 3}
     discount_count = div(quantity_as_int, qualifying_quantity)
 
@@ -82,7 +62,9 @@ defmodule Supermarket.Model.ShoppingCart do
     end
   end
 
-  defp two_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int) do
+  defp calculate_discount(unit_price, %{offer_type: :two_for_amount} = offer, product, quantity) do
+    quantity_as_int = trunc(quantity)
+
     if quantity_as_int >= 2 do
       qualifying_quantity = 2
       int_division = div(quantity_as_int, qualifying_quantity)
@@ -96,7 +78,8 @@ defmodule Supermarket.Model.ShoppingCart do
     end
   end
 
-  defp five_for_amount_discount(unit_price, offer, product, quantity, quantity_as_int) do
+  defp calculate_discount(unit_price, %{offer_type: :five_for_amount} = offer, product, quantity) do
+    quantity_as_int = trunc(quantity)
     discount = nil
     qualifying_quantity = 5
     discount_count = div(quantity_as_int, qualifying_quantity)
@@ -112,11 +95,18 @@ defmodule Supermarket.Model.ShoppingCart do
     end
   end
 
-  defp ten_percent_discount(unit_price, offer, product, quantity, _quantity_as_int) do
+  defp calculate_discount(
+         unit_price,
+         %{offer_type: :ten_percent_discount} = offer,
+         product,
+         quantity
+       ) do
     Discount.new(
       product,
       "#{offer.argument}% off",
       -quantity * unit_price * offer.argument / 100.0
     )
   end
+
+  defp calculate_discount(_unit_price, _offer, _product, _quantity), do: nil
 end
