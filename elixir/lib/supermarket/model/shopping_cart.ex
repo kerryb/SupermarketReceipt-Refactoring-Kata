@@ -92,6 +92,13 @@ defmodule Supermarket.Model.ShoppingCart do
           discount
         end
 
+      :ten_percent_discount ->
+        Discount.new(
+          product,
+          "#{offer.argument}% off",
+          -quantity * unit_price * offer.argument / 100.0
+        )
+
       _ ->
         if offer.offer_type == :ten_percent_discount do
           Discount.new(
