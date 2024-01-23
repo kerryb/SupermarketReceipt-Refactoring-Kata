@@ -100,15 +100,7 @@ defmodule Supermarket.Model.ShoppingCart do
         )
 
       _ ->
-        if offer.offer_type == :ten_percent_discount do
-          Discount.new(
-            product,
-            "#{offer.argument}% off",
-            -quantity * unit_price * offer.argument / 100.0
-          )
-        else
-          nil
-        end
+        nil
     end
   end
 end
