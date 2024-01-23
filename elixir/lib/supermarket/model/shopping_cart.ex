@@ -77,6 +77,21 @@ defmodule Supermarket.Model.ShoppingCart do
           nil
         end
 
+      :five_for_amount ->
+        discount = nil
+        qualifying_quantity = 5
+        discount_count = div(quantity_as_int, qualifying_quantity)
+
+        if quantity_as_int >= 5 do
+          discount_total =
+            unit_price * quantity -
+              (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
+
+          Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
+        else
+          discount
+        end
+
       _ ->
         {discount, qualifying_quantity} = {nil, 2}
 
