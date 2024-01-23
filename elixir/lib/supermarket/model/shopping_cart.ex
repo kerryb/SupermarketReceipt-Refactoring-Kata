@@ -62,37 +62,29 @@ defmodule Supermarket.Model.ShoppingCart do
     end
   end
 
-  defp calculate_discount(unit_price, %{offer_type: :two_for_amount} = offer, product, quantity) do
+  defp calculate_discount(unit_price, %{offer_type: :two_for_amount} = offer, product, quantity)
+       when quantity >= 2 do
     quantity_as_int = trunc(quantity)
-
-    if quantity_as_int >= 2 do
-      qualifying_quantity = 2
-      int_division = div(quantity_as_int, qualifying_quantity)
-      price_per_unit = offer.argument * int_division
-      the_total = Integer.mod(quantity_as_int, 2) * unit_price
-      total = price_per_unit + the_total
-      discount_n = unit_price * quantity - total
-      Discount.new(product, "2 for #{offer.argument}", -discount_n)
-    else
-      nil
-    end
+    qualifying_quantity = 2
+    int_division = div(quantity_as_int, qualifying_quantity)
+    price_per_unit = offer.argument * int_division
+    the_total = Integer.mod(quantity_as_int, 2) * unit_price
+    total = price_per_unit + the_total
+    discount_n = unit_price * quantity - total
+    Discount.new(product, "2 for #{offer.argument}", -discount_n)
   end
 
-  defp calculate_discount(unit_price, %{offer_type: :five_for_amount} = offer, product, quantity) do
+  defp calculate_discount(unit_price, %{offer_type: :five_for_amount} = offer, product, quantity)
+       when quantity >= 5 do
     quantity_as_int = trunc(quantity)
-    discount = nil
     qualifying_quantity = 5
     discount_count = div(quantity_as_int, qualifying_quantity)
 
-    if quantity_as_int >= 5 do
-      discount_total =
-        unit_price * quantity -
-          (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
+    discount_total =
+      unit_price * quantity -
+        (offer.argument * discount_count + Integer.mod(quantity_as_int, 5) * unit_price)
 
-      Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
-    else
-      discount
-    end
+    Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
   end
 
   defp calculate_discount(
