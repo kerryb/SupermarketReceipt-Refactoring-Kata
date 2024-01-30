@@ -57,8 +57,6 @@ defmodule Supermarket.Model.ShoppingCart do
           (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
 
       Discount.new(product, "3 for 2", -discount_amount)
-    else
-      nil
     end
   end
 
