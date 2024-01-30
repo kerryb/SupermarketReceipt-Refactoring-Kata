@@ -1,9 +1,6 @@
 defmodule Supermarket.Model.ShoppingCart do
   require IEx
-  alias Supermarket.Model.Discount.TenPercent
-  alias Supermarket.Model.Discount.ThreeForTwo
-  alias Supermarket.Model.Discount.TwoForAmount
-  alias Supermarket.Model.Discount.FiveForAmount
+  alias Supermarket.Model.Discount
   alias Supermarket.Model.ProductQuantity
   alias Supermarket.Model.Receipt
   alias Supermarket.Model.SupermarketCatalog
@@ -40,7 +37,8 @@ defmodule Supermarket.Model.ShoppingCart do
 
         offer ->
           unit_price = SupermarketCatalog.get_unit_price(catalog, product)
-          discount = calculate_discount(unit_price, offer, product, quantity)
+          calculator = Discount.calculator(offer.offer_type)
+          discount = calculator.calculate_discount(unit_price, offer, product, quantity)
           apply_offer(receipt, discount)
       end
     end)
@@ -48,30 +46,4 @@ defmodule Supermarket.Model.ShoppingCart do
 
   defp apply_offer(receipt, nil), do: receipt
   defp apply_offer(receipt, discount), do: Receipt.add_discount(receipt, discount)
-
-  defp calculate_discount(unit_price, %{offer_type: :three_for_two}, product, quantity)
-       when quantity >= 3 do
-    ThreeForTwo.calculate_discount(unit_price, product, quantity)
-  end
-
-  defp calculate_discount(unit_price, %{offer_type: :two_for_amount} = offer, product, quantity)
-       when quantity >= 2 do
-    TwoForAmount.calculate_discount(unit_price, offer, product, quantity)
-  end
-
-  defp calculate_discount(unit_price, %{offer_type: :five_for_amount} = offer, product, quantity)
-       when quantity >= 5 do
-    FiveForAmount.calculate_discount(unit_price, offer, product, quantity)
-  end
-
-  defp calculate_discount(
-         unit_price,
-         %{offer_type: :ten_percent_discount} = offer,
-         product,
-         quantity
-       ) do
-    TenPercent.calculate_discount(unit_price, offer, product, quantity)
-  end
-
-  defp calculate_discount(_unit_price, _offer, _product, _quantity), do: nil
 end
