@@ -48,7 +48,7 @@ defmodule Supermarket.Model.ShoppingCart do
 
   defp calculate_discount(unit_price, %{offer_type: :three_for_two}, product, quantity) do
     quantity_as_int = trunc(quantity)
-    {discount, qualifying_quantity} = {nil, 3}
+    qualifying_quantity = 3
     discount_count = div(quantity_as_int, qualifying_quantity)
 
     if quantity_as_int > 2 do
@@ -58,7 +58,7 @@ defmodule Supermarket.Model.ShoppingCart do
 
       Discount.new(product, "3 for 2", -discount_amount)
     else
-      discount
+      nil
     end
   end
 
