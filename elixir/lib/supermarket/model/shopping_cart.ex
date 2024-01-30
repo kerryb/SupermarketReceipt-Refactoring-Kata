@@ -2,6 +2,7 @@ defmodule Supermarket.Model.ShoppingCart do
   require IEx
   alias Supermarket.Model.Discount
   alias Supermarket.Model.Discount.ThreeForTwo
+  alias Supermarket.Model.Discount.NForAmount
   alias Supermarket.Model.ProductQuantity
   alias Supermarket.Model.Receipt
   alias Supermarket.Model.SupermarketCatalog
@@ -54,12 +55,12 @@ defmodule Supermarket.Model.ShoppingCart do
 
   defp calculate_discount(unit_price, %{offer_type: :two_for_amount} = offer, product, quantity)
        when quantity >= 2 do
-    n_for_amount_discount(unit_price, offer, product, quantity, 2)
+    NForAmount.calculate_discount(unit_price, offer, product, quantity, 2)
   end
 
   defp calculate_discount(unit_price, %{offer_type: :five_for_amount} = offer, product, quantity)
        when quantity >= 5 do
-    n_for_amount_discount(unit_price, offer, product, quantity, 5)
+    NForAmount.calculate_discount(unit_price, offer, product, quantity, 5)
   end
 
   defp calculate_discount(
@@ -76,16 +77,4 @@ defmodule Supermarket.Model.ShoppingCart do
   end
 
   defp calculate_discount(_unit_price, _offer, _product, _quantity), do: nil
-
-  defp n_for_amount_discount(unit_price, offer, product, quantity, qualifying_quantity) do
-    quantity_as_int = trunc(quantity)
-    discount_count = div(quantity_as_int, qualifying_quantity)
-
-    discount_total =
-      unit_price * quantity -
-        (offer.argument * discount_count +
-           Integer.mod(quantity_as_int, qualifying_quantity) * unit_price)
-
-    Discount.new(product, "#{qualifying_quantity} for #{offer.argument}", -discount_total)
-  end
 end
