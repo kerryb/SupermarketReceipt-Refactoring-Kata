@@ -1,6 +1,6 @@
 defmodule Supermarket.Model.ShoppingCart do
   require IEx
-  alias Supermarket.Model.Discount
+  alias Supermarket.Model.Discount.TenPercent
   alias Supermarket.Model.Discount.ThreeForTwo
   alias Supermarket.Model.Discount.NForAmount
   alias Supermarket.Model.ProductQuantity
@@ -69,11 +69,7 @@ defmodule Supermarket.Model.ShoppingCart do
          product,
          quantity
        ) do
-    Discount.new(
-      product,
-      "#{offer.argument}% off",
-      -quantity * unit_price * offer.argument / 100.0
-    )
+    TenPercent.calculate_discount(unit_price, offer, product, quantity)
   end
 
   defp calculate_discount(_unit_price, _offer, _product, _quantity), do: nil
