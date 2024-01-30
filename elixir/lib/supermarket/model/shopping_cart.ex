@@ -1,6 +1,7 @@
 defmodule Supermarket.Model.ShoppingCart do
   require IEx
   alias Supermarket.Model.Discount
+  alias Supermarket.Model.Discount.ThreeForTwo
   alias Supermarket.Model.ProductQuantity
   alias Supermarket.Model.Receipt
   alias Supermarket.Model.SupermarketCatalog
@@ -48,13 +49,7 @@ defmodule Supermarket.Model.ShoppingCart do
 
   defp calculate_discount(unit_price, %{offer_type: :three_for_two}, product, quantity)
        when quantity >= 3 do
-    quantity_as_int = trunc(quantity)
-    discount_count = div(quantity_as_int, 3)
-
-    discount_amount =
-      (quantity - (discount_count * 2 + Integer.mod(quantity_as_int, 3))) * unit_price
-
-    Discount.new(product, "3 for 2", -discount_amount)
+    ThreeForTwo.calculate_discount(unit_price, product, quantity)
   end
 
   defp calculate_discount(unit_price, %{offer_type: :two_for_amount} = offer, product, quantity)
