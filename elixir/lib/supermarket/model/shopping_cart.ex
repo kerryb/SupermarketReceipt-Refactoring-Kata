@@ -46,18 +46,17 @@ defmodule Supermarket.Model.ShoppingCart do
   defp apply_offer(receipt, nil), do: receipt
   defp apply_offer(receipt, discount), do: Receipt.add_discount(receipt, discount)
 
-  defp calculate_discount(unit_price, %{offer_type: :three_for_two}, product, quantity) do
+  defp calculate_discount(unit_price, %{offer_type: :three_for_two}, product, quantity)
+       when quantity >= 3 do
     quantity_as_int = trunc(quantity)
     qualifying_quantity = 3
     discount_count = div(quantity_as_int, qualifying_quantity)
 
-    if quantity_as_int > 2 do
-      discount_amount =
-        quantity * unit_price -
-          (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
+    discount_amount =
+      quantity * unit_price -
+        (discount_count * 2 * unit_price + Integer.mod(quantity_as_int, 3) * unit_price)
 
-      Discount.new(product, "3 for 2", -discount_amount)
-    end
+    Discount.new(product, "3 for 2", -discount_amount)
   end
 
   defp calculate_discount(unit_price, %{offer_type: :two_for_amount} = offer, product, quantity)
